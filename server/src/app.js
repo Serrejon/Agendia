@@ -3,6 +3,10 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import {env} from './config/env.js'
 
+import { notFound, errorHandler} from './middlewares//error.middleware.js'
+import AppError from './utils/AppError.js'
+import { asyncHandler } from './utils/asyncHandler.js'
+
 const app = express()
 
 app.use(cors({ origin: env.clientUrl, credentials: true }))
@@ -12,5 +16,18 @@ app.use(cookieParser())
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', app: 'agendia'})
 })
+
+app.get('/api/test-error', (req, res, next) => {
+    next(new AppError('Esto es un error de prueba', 400))
+})
+app.get(
+    '/api/test-async',
+    asyncHandler(async () => {
+        throw new Error('Fallo inesperado asincrono')
+    })
+)
+
+app.use(notFound)
+app.use(errorHandler)
 
 export default app
